@@ -1,45 +1,706 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex">
-  <title>TIPE – Présentation</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AdaptSW — TIPE de Youssef Litayem sur la transmission de messages entre téléphones sans réseau mobile ni Internet.">
+  <meta name="theme-color" content="#f3f0e9">
+  <meta property="og:title" content="AdaptSW — TIPE de Youssef Litayem">
+  <meta property="og:description" content="Le protocole que j’ai conçu pour adapter le nombre de copies d’un message aux rencontres observées entre téléphones.">
+  <meta property="og:type" content="website">
+  <title>AdaptSW — TIPE de Youssef Litayem</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="assets/mathjax-tex-svg.js"></script>
+  <script defer src="script.js"></script>
 </head>
-
 <body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
 
-<header>
-  <h1>TIPE – Modélisation & Simulation</h1>
-  <p class="subtitle">Projet scientifique – MP2I</p>
-  <nav>
-    <a href="index.html">Présentation</a>
-    <a href="recherches.html">Recherches</a>
-  </nav>
-</header>
+  <header class="site-header">
+    <a class="brand" href="#haut" aria-label="Retour en haut">
+      <span class="brand-mark" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </span>
+      <span>AdaptSW</span>
+    </a>
 
-<section class="intro">
-  <h2>Présentation</h2>
-  <p>
-    Ce site présente la réflexion, les hypothèses et les résultats
-    liés à mon TIPE. Les calculs sont réalisés hors ligne (OCaml / C),
-    le site servant de support visuel.
-  </p>
-</section>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span class="sr-only">Ouvrir la navigation</span>
+      <span></span><span></span>
+    </button>
 
-<section class="timeline">
-  <h2>Avancement du projet</h2>
+    <nav id="main-nav" class="main-nav" aria-label="Navigation principale">
+      <a href="#idee">Idée</a>
+      <a href="#modele">Modèle</a>
+      <a href="#adaptation">Adaptation</a>
+      <a href="#android">Android</a>
+      <a href="#validation">Validation</a>
+      <a class="nav-github" href="https://github.com/litayem2005/AdaptSW" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+  </header>
 
-  <div class="line">
-    <div class="point" data-text="Choix du sujet et premières pistes."></div>
-    <div class="point" data-text="Construction du modèle mathématique."></div>
-    <div class="point" data-text="Implémentation et simulations."></div>
-    <div class="point" data-text="Analyse des résultats et limites."></div>
-  </div>
+  <main id="contenu">
+    <section id="haut" class="hero section-shell">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">TIPE · Sobriété, efficacité, optimisation</p>
+        <h1>Faire circuler un message quand le réseau ne fonctionne plus.</h1>
+        <p class="hero-intro">
+          Dans ce TIPE, je pars de Spray-and-Wait pour concevoir mon propre protocole, AdaptSW. Il adapte le nombre de copies
+          d’un message afin de le transmettre de téléphone en téléphone, sans antenne, sans Internet et sans connexion continue.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#idee">Comprendre le projet</a>
+          <a class="button secondary" href="#simulation">Voir la visualisation</a>
+        </div>
+        <p class="author-line">Youssef Litayem, élève MP2I</p>
+      </div>
 
-  <div id="tooltip"></div>
-</section>
+      <div class="hero-network reveal" aria-label="Schéma animé de transmission d'un message entre téléphones">
+        <div class="network-grid"></div>
+        <div class="hero-node source" style="--x: 13%; --y: 70%;"><span>1</span><b>SOS</b></div>
+        <div class="hero-node relay" style="--x: 38%; --y: 45%;"><span>3</span></div>
+        <div class="hero-node relay" style="--x: 65%; --y: 62%;"><span>5</span></div>
+        <div class="hero-node rescue" style="--x: 84%; --y: 25%;"><span>6</span><b>secours</b></div>
+        <svg class="hero-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M15 70 C26 66 28 50 39 46 S55 58 65 62 S75 41 84 26"></path>
+        </svg>
+        <div class="packet packet-a">message</div>
+        <div class="packet packet-b">copie</div>
+        <p class="network-caption">Le chemin se construit au fil des rencontres.</p>
+      </div>
+    </section>
 
-<script src="script.js"></script>
+    <section id="idee" class="chapter section-shell">
+      <div class="chapter-number">01</div>
+      <div class="chapter-heading reveal">
+        <p class="eyebrow">Point de départ</p>
+        <h2>Les téléphones fonctionnent encore, mais plus rien ne les relie.</h2>
+      </div>
+
+      <div class="two-column prose-grid">
+        <div class="prose reveal">
+          <p>
+            Le projet est parti d’un constat simple observé après le séisme de Turquie de 2023, des survivants avaient encore
+            des téléphones allumés mais ne pouvaient plus communiquer. En effet, un appel habituel dépend d’une chaîne entière: antenne,
+            câbles, serveurs, puis nouvelle antenne et quand cette infrastructure disparaît, le téléphone seul ne suffit plus.
+          </p>
+          <p>
+            Le satellite ne constitue pas une solution générale pour un téléphone ordinaire car la puissance reçue devient trop faible
+            à plusieurs centaines de kilomètres et une liaison directe par Bluetooth ou Wi‑Fi reste, elle, limitée à quelques dizaines
+            de mètres. Il faut donc accepter qu’aucun chemin complet n’existe au même instant.
+          </p>
+        </div>
+
+        <div class="chain-card reveal" aria-label="Comparaison entre réseau classique et réseau tolérant aux délais">
+          <div class="chain-row broken">
+            <span>Téléphone</span><i></i><span>Antenne</span><i></i><span>Serveur</span><i></i><span>Destinataire</span>
+          </div>
+          <div class="break-label">infrastructure interrompue</div>
+          <div class="chain-row mobile">
+            <span>A</span><i></i><span>B</span><i></i><span>C</span><i></i><span>D</span>
+          </div>
+          <p>Le message est stocké, transporté, puis retransmis plus tard.</p>
+        </div>
+      </div>
+
+      <div class="statement reveal">
+        <span>store</span>
+        <i></i>
+        <span>carry</span>
+        <i></i>
+        <span>forward</span>
+      </div>
+
+      <div class="prose wide reveal">
+        <p>
+          Une personne A peut rencontrer B, puis B peut rencontrer C, puis C peut atteindre D. Le message arrive même si A et D
+          n’ont jamais été proches. La mobilité des personnes remplace peu à peu l’infrastructure absente. Ce fonctionnement appartient
+          aux réseaux tolérants aux délais, ou DTN.
+        </p>
+        <p class="lead-question">
+          La question centrale devient alors : <strong>combien de copies du message faut-il créer à chaque rencontre&nbsp;?</strong>
+        </p>
+      </div>
+    </section>
+
+    <section class="chapter alternate">
+      <div class="section-shell">
+        <div class="chapter-number">02</div>
+        <div class="chapter-heading reveal">
+          <p class="eyebrow">Le compromis</p>
+          <h2>Une seule copie est fragile. Trop de copies épuisent le réseau.</h2>
+        </div>
+
+        <div class="protocol-grid">
+          <article class="protocol-card reveal">
+            <span class="protocol-index">L = 1</span>
+            <h3>Direct Delivery</h3>
+            <p>La source garde le message et attend de rencontrer elle-même la destination.</p>
+            <dl><div><dt>Livraison</dt><dd>faible</dd></div><div><dt>Coût</dt><dd>très faible</dd></div></dl>
+          </article>
+
+          <article class="protocol-card reveal">
+            <span class="protocol-index">L illimité</span>
+            <h3>Routage épidémique</h3>
+            <p>Chaque nœud transmet le message à tous les nœuds rencontrés.</p>
+            <dl><div><dt>Livraison</dt><dd>très élevée</dd></div><div><dt>Coût</dt><dd>très élevé</dd></div></dl>
+          </article>
+
+          <article class="protocol-card accent reveal">
+            <span class="protocol-index">L choisi</span>
+            <h3>Spray-and-Wait</h3>
+            <p>Un nombre limité de copies est distribué, puis chaque porteur attend la destination.</p>
+            <dl><div><dt>Livraison</dt><dd>intermédiaire</dd></div><div><dt>Coût</dt><dd>maîtrisé</dd></div></dl>
+          </article>
+        </div>
+
+        <div class="spray-demo reveal">
+          <div class="spray-copy source-copy"><strong>8</strong><span>copies</span></div>
+          <div class="spray-arrow"></div>
+          <div class="spray-copy"><strong>4</strong><span>gardées</span></div>
+          <div class="spray-copy"><strong>4</strong><span>données</span></div>
+          <p>
+            Lors d’un contact, un porteur qui possède <em>n &gt; 1</em> copies en donne ⌊n/2⌋ et conserve les autres.
+            La division par deux diffuse les copies en environ log₂(L) rencontres au lieu de L − 1.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="modele" class="chapter section-shell">
+      <div class="chapter-number">03</div>
+      <div class="chapter-heading reveal">
+        <p class="eyebrow">Modèle mathématique</p>
+        <h2>Relier le nombre de copies aux chances de livraison.</h2>
+      </div>
+
+      <div class="prose-grid two-column">
+        <div class="prose reveal">
+          <p>
+            Dans le modèle Random Waypoint, chaque personne choisit une destination, s’y déplace, puis recommence. Les rencontres
+            entre deux personnes sont modélisées par un processus de Poisson de taux \(\lambda\). Si \(N_s\) désigne le nombre de
+            contacts observés pendant une durée \(s\), alors :
+          </p>
+          <div class="math-display">\[N_s \sim \mathcal{P}(\lambda s), \qquad \mathbb{E}[N_s]=\lambda s.\]</div>
+          <p>
+            Le temps \(T\) avant le prochain contact suit donc une loi exponentielle. La probabilité de rencontrer la destination
+            avant l’expiration d’un message de durée de vie \(\tau\) vaut :
+          </p>
+          <div class="math-display">\[\mathbb{P}(T\leq \tau)=1-e^{-\lambda\tau}.\]</div>
+        </div>
+
+        <div class="formula-stack reveal">
+          <div class="formula-card">
+            <span>Nombre de contacts pendant une durée s</span>
+            <div class="math-display">\[\mathbb{P}(N_s=k)=e^{-\lambda s}\frac{(\lambda s)^k}{k!}\]</div>
+          </div>
+          <div class="formula-card">
+            <span>Taux géométrique approché</span>
+            <div class="math-display">\[\lambda_0=\frac{2R\,\overline{v}}{A^2}\]</div>
+          </div>
+          <div class="formula-card main-formula">
+            <span>Probabilité de livraison avec L copies</span>
+            <div class="math-display">\[P(L)=1-q^{L-1}e^{-\lambda\tau}\]</div>
+            <small>avec \(q=1-\frac{1}{N-1}\)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="math-details reveal">
+        <article class="math-detail-card">
+          <p class="eyebrow">Calcul de P(L)</p>
+          <h3>Prendre en compte la phase de diffusion et la phase d’attente</h3>
+          <p>
+            La probabilité que les \(L-1\) relais choisis ne soient pas la destination vaut \(q^{L-1}\). Dans ce cas, il faut encore
+            attendre un contact direct avant la fin du TTL. En appliquant la formule des probabilités totales :
+          </p>
+          <div class="math-display wide-equation">
+            \[
+              \begin{aligned}
+              P(L)
+              &=\bigl(1-q^{L-1}\bigr)\times 1
+                +q^{L-1}\bigl(1-e^{-\lambda\tau}\bigr)\\
+              &=1-q^{L-1}e^{-\lambda\tau}.
+              \end{aligned}
+            \]
+          </div>
+        </article>
+
+        <article class="math-detail-card">
+          <p class="eyebrow">Gain marginal</p>
+          <h3>Chaque nouvelle copie apporte un gain plus faible que la précédente</h3>
+          <div class="math-display wide-equation">
+            \[
+              P(L)-P(L-1)=e^{-\lambda\tau}q^{L-2}(1-q).
+            \]
+          </div>
+          <p>Comme \(0\lt q\lt 1\), le terme \(q^{L-2}\) décroît quand \(L\) augmente. Plus précisément :</p>
+          <div class="math-display wide-equation">
+            \[
+              \begin{aligned}
+              &\bigl[P(L+1)-P(L)\bigr]\\
+              &\quad-\bigl[P(L)-P(L-1)\bigr]\\
+              &=-e^{-\lambda\tau}(1-q)^2q^{L-2}\lt 0.
+              \end{aligned}
+            \]
+          </div>
+          <p>La fonction \(P\) est donc strictement concave.</p>
+        </article>
+      </div>
+
+      <div class="math-note reveal">
+        <div>
+          <h3>Définir le nombre de copies optimal</h3>
+          <p>
+            Le coût en transmissions augmente avec \(L\), alors que le gain de livraison devient de plus en plus faible. Je définis donc
+            un rendement qui compare la probabilité de livraison au coût de diffusion :
+          </p>
+          <div class="math-display left-equation">
+            \[
+              \begin{aligned}
+              T(1)&=1,\\
+              T(L)&=(L-1)+\frac{P(L)}{1-q^{L-1}},\qquad L\ge 2,\\
+              R(L)&=\frac{P(L)}{T(L)}.
+              \end{aligned}
+            \]
+          </div>
+          <div class="math-display left-equation optimum-equation">
+            \[
+              L^{\star}=\underset{L\in\{1,\ldots,N\}}{\operatorname{arg\,max}}\;R(L).
+            \]
+          </div>
+        </div>
+        <div class="gain-bars" aria-hidden="true">
+          <span style="--h: 100%"></span><span style="--h: 76%"></span><span style="--h: 56%"></span><span style="--h: 40%"></span><span style="--h: 28%"></span><span style="--h: 18%"></span>
+        </div>
+      </div>
+
+      <div class="interactive-card reveal" id="courbes">
+        <div class="interactive-copy">
+          <p class="eyebrow">Explorer le modèle</p>
+          <h3>Le meilleur \(L\) change avec la fréquence des rencontres.</h3>
+          <p>
+            Modifiez les paramètres. Le graphique recalcule la probabilité de livraison, le coût théorique et le rendement.
+          </p>
+          <div class="control-group">
+            <label for="lambda-range">Taux de contact \(\lambda\) <output id="lambda-output">0,00030</output> s⁻¹</label>
+            <input id="lambda-range" type="range" min="0.00001" max="0.002" step="0.00001" value="0.0003">
+          </div>
+          <div class="control-group">
+            <label for="ttl-range">Durée de vie \(\tau\) <output id="ttl-output">300</output> s</label>
+            <input id="ttl-range" type="range" min="30" max="600" step="30" value="300">
+          </div>
+          <div class="control-group">
+            <label for="nodes-range">Nombre de téléphones \(N\) <output id="nodes-output">10</output></label>
+            <input id="nodes-range" type="range" min="4" max="30" step="1" value="10">
+          </div>
+          <div class="lstar-result">
+            <span>Maximum du rendement</span>
+            <strong><span class="lstar-symbol">\(L^{\star}=\)</span><span id="lstar-output">3</span></strong>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="model-chart" width="760" height="430" aria-label="Courbes théoriques en fonction du nombre de copies"></canvas>
+          <div class="chart-legend" aria-hidden="true">
+            <span><i class="p-line"></i>\(P(L)\)</span>
+            <span><i class="t-line"></i>coût normalisé</span>
+            <span><i class="r-line"></i>rendement normalisé</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="adaptation" class="chapter alternate">
+      <div class="section-shell">
+        <div class="chapter-number">04</div>
+        <div class="chapter-heading reveal">
+          <p class="eyebrow">Création d’AdaptSW</p>
+          <h2>À partir de Spray-and-Wait, je construis un protocole dont le nombre de copies s’adapte au réseau.</h2>
+        </div>
+
+        <div class="adapt-intro prose wide reveal">
+          <p>
+            Spray-and-Wait utilise habituellement une valeur fixe de \(L\). Or cette valeur peut convenir dans une zone dense,
+            puis devenir mauvaise lorsque les personnes se dispersent. Mon protocole AdaptSW estime donc le taux de rencontre
+            \(\lambda\) à partir des contacts réellement observés, partage cette estimation entre téléphones, puis recalcule
+            continuellement la valeur \(L^{\star}\) qui maximise le rendement.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step reveal">
+            <div class="step-head"><span>1</span><h3>Observer</h3></div>
+            <p>Le téléphone compte \(c_i\) contacts pendant une fenêtre glissante de durée \(W\).</p>
+            <div class="inline-formula">\[\widehat{\lambda}_i=\frac{c_i}{(N-1)W}\]</div>
+            <p class="small-copy">
+              Cet estimateur du maximum de vraisemblance est sans biais et sa variance diminue lorsque la fenêtre contient davantage d’observations.
+            </p>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head"><span>2</span><h3>Partager</h3></div>
+            <p>Deux téléphones combinent leurs estimations par gossip pondéré, sans serveur central.</p>
+            <div class="inline-formula">
+              \[
+                \widehat{\lambda}'=
+                \frac{(c_i+1)\widehat{\lambda}_i+(c_j+1)\widehat{\lambda}_j}
+                     {c_i+c_j+2}
+              \]
+            </div>
+            <p class="small-copy">
+              L’estimation reposant sur le plus grand nombre de contacts reçoit le poids le plus élevé.
+            </p>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head"><span>3</span><h3>Optimiser</h3></div>
+            <p>À partir de \(\widehat{\lambda}\), chaque téléphone recalcule le nombre de copies qui maximise le rendement.</p>
+            <div class="inline-formula">
+              \[
+                L^{\star}=\underset{L\in\{1,\ldots,N\}}{\operatorname{arg\,max}}\;R(L)
+              \]
+            </div>
+            <p class="small-copy">
+              Comme \(R\) est unimodale, une recherche ternaire réduit le calcul à \(O(\log N)\) évaluations.
+            </p>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head"><span>4</span><h3>Tenir compte de l’âge du message</h3></div>
+            <p>Le nombre de copies encore autorisées diminue avec le temps restant \(\tau'\).</p>
+            <div class="inline-formula">
+              \[
+                L_{\mathrm{eff}}(\tau')=
+                \max\!\left(1,\left\lfloor 1+(L^{\star}-1)\frac{\tau'}{\tau_0}\right\rfloor\right)
+              \]
+            </div>
+            <p class="small-copy">
+              Une copie créée juste avant l’expiration a peu de chances d’être utile ; AdaptSW évite donc de la transmettre.
+            </p>
+          </article>
+        </div>
+
+        <details class="derivation reveal">
+          <summary>Détails mathématiques de l’estimation et du gossip</summary>
+          <div>
+            <h3>Estimateur de \(\lambda\)</h3>
+            <p>
+              Le nombre de contacts observés suit \(c_i\sim\mathcal{P}((N-1)\lambda W)\). En posant
+              \(\mu=(N-1)\lambda W\), la vraisemblance vaut :
+            </p>
+            <div class="math-display left-equation">\[\mathcal{L}(\mu)=e^{-\mu}\frac{\mu^{c_i}}{c_i!}.\]</div>
+            <p>La dérivée du logarithme de la vraisemblance s’annule pour \(\widehat{\mu}=c_i\), d’où :</p>
+            <div class="math-display left-equation">
+              \[
+                \widehat{\lambda}_i=\frac{c_i}{(N-1)W},\qquad
+                \mathbb{E}[\widehat{\lambda}_i]=\lambda,\qquad
+                \operatorname{Var}(\widehat{\lambda}_i)=\frac{\lambda}{(N-1)W}.
+              \]
+            </div>
+
+            <h3>Choix du poids de gossip</h3>
+            <p>
+              On cherche \(\widehat{\lambda}'=\alpha\widehat{\lambda}_i+(1-\alpha)\widehat{\lambda}_j\).
+              Si les deux estimations sont indépendantes, sa variance est :
+            </p>
+            <div class="math-display left-equation">
+              \[
+                \operatorname{Var}(\widehat{\lambda}')=
+                \alpha^2V_i+(1-\alpha)^2V_j.
+              \]
+            </div>
+            <p>
+              La minimisation donne \(\alpha=V_j/(V_i+V_j)\). En prenant
+              \(V_i=K/(c_i+\beta)\), \(V_j=K/(c_j+\beta)\) et \(\beta=1\), on obtient :
+            </p>
+            <div class="math-display left-equation">
+              \[
+                \alpha_i=\frac{c_i+1}{c_i+c_j+2},\qquad
+                \widehat{\lambda}'=
+                \frac{(c_i+1)\widehat{\lambda}_i+(c_j+1)\widehat{\lambda}_j}
+                     {c_i+c_j+2}.
+              \]
+            </div>
+          </div>
+        </details>
+
+        <div class="contact-flow reveal">
+          <p class="eyebrow">Lors d’une rencontre</p>
+          <ol>
+            <li><span>01</span><p>Détecter le voisin et lire son paquet BLE.</p></li>
+            <li><span>02</span><p>Mettre à jour \(\widehat{\lambda}\) avec le gossip pondéré.</p></li>
+            <li><span>03</span><p>Recalculer \(L^{\star}\) puis \(L_{\mathrm{eff}}\).</p></li>
+            <li><span>04</span><p>Livrer directement, partager les copies ou attendre.</p></li>
+            <li><span>05</span><p>Propager l’accusé de réception quand le message arrive.</p></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulation" class="chapter section-shell">
+      <div class="chapter-number">05</div>
+      <div class="chapter-heading reveal">
+        <p class="eyebrow">Visualisation pédagogique</p>
+        <h2>Suivre un message pendant que les téléphones se déplacent.</h2>
+      </div>
+
+      <div class="simulation-shell reveal">
+        <div class="simulation-toolbar">
+          <div class="sim-field">
+            <label for="sim-mode">Protocole</label>
+            <select id="sim-mode">
+              <option value="adapt">AdaptSW</option>
+              <option value="direct">Direct Delivery</option>
+              <option value="fixed4">Spray-and-Wait, L = 4</option>
+              <option value="fixed8">Spray-and-Wait, L = 8</option>
+            </select>
+          </div>
+          <div class="sim-field range-field">
+            <label for="sim-count">Téléphones <output id="sim-count-output">8</output></label>
+            <input id="sim-count" type="range" min="5" max="14" value="8">
+          </div>
+          <div class="sim-field range-field">
+            <label for="sim-density">Portée <output id="sim-density-output">moyenne</output></label>
+            <input id="sim-density" type="range" min="55" max="125" value="85">
+          </div>
+          <button id="sim-toggle" class="button secondary compact" type="button">Pause</button>
+          <button id="sim-reset" class="button primary compact" type="button">Relancer</button>
+        </div>
+
+        <div class="simulation-layout">
+          <div class="simulation-canvas-wrap">
+            <canvas id="network-sim" width="920" height="550" aria-label="Simulation de téléphones mobiles échangeant un message"></canvas>
+            <div class="sim-key" aria-hidden="true">
+              <span><i class="source-dot"></i>source</span>
+              <span><i class="carrier-dot"></i>porteur</span>
+              <span><i class="rescue-dot"></i>destination</span>
+            </div>
+          </div>
+          <aside class="sim-panel" aria-live="polite">
+            <div class="sim-status" id="sim-status">Message en circulation</div>
+            <dl>
+              <div><dt>Temps écoulé</dt><dd id="sim-time">0,0 s</dd></div>
+              <div><dt>Contacts observés</dt><dd id="sim-contacts">0</dd></div>
+              <div><dt>λ̂ estimé</dt><dd id="sim-lambda">0,000 s⁻¹</dd></div>
+              <div class="sim-lstar-row"><dt>Copies choisies</dt><dd><span>\(L^{\star}=\)</span><strong id="sim-lstar">1</strong></dd></div>
+              <div><dt>Porteurs actuels</dt><dd id="sim-carriers">1</dd></div>
+              <div><dt>Transmissions</dt><dd id="sim-transmissions">0</dd></div>
+            </dl>
+            <p class="sim-note">
+              Cette animation illustre les règles du protocole. Elle ne remplace pas le protocole expérimental sur téléphones réels.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="android" class="chapter alternate">
+      <div class="section-shell">
+        <div class="chapter-number">06</div>
+        <div class="chapter-heading reveal">
+          <p class="eyebrow">Mise en œuvre</p>
+          <h2>Une application Android qui échange de petits paquets en Bluetooth Low Energy.</h2>
+        </div>
+
+        <div class="prose-grid two-column">
+          <div class="prose reveal">
+            <p>
+              Les téléphones Android ont été retenus parce qu’ils sont déjà disponibles, suffisamment robustes pour une expérience
+              en déplacement et capables d’émettre et de scanner en BLE. Le mode advertising permet de diffuser un paquet court sans
+              appairage préalable. En mode avion, le Bluetooth peut rester actif alors que le réseau mobile et Internet sont coupés.
+            </p>
+            <p>
+              L’application sépare le cœur d’AdaptSW de la couche Android. Le cœur reçoit des événements de contact et décide quoi
+              transmettre. La couche BLE détecte les voisins, encode les paquets et met à jour les données diffusées.
+            </p>
+          </div>
+
+          <div class="architecture reveal" aria-label="Architecture de l'application Android">
+            <div class="arch-layer ui-layer"><span>Interface</span><strong>Jetpack Compose</strong></div>
+            <div class="arch-arrow"></div>
+            <div class="arch-layer core-layer"><span>Protocole</span><strong>AdaptSW · buffer · gossip · L*</strong></div>
+            <div class="arch-arrow"></div>
+            <div class="arch-layer ble-layer"><span>Communication</span><strong>Scan · advertising · codec BLE</strong></div>
+          </div>
+        </div>
+
+        <div class="files-grid reveal">
+          <article><code>AdaptCore.kt</code><p>Formules, estimation de λ, gossip, recherche de L* et L<sub>eff</sub>.</p></article>
+          <article><code>AdaptMessage.kt</code><p>Structure d’un message SOS, TTL, coordonnées et nombre de copies.</p></article>
+          <article><code>MessageBuffer.kt</code><p>Stockage des messages, suppression des doublons et rotation round-robin.</p></article>
+          <article><code>BlePacket.kt</code><p>Définition et encodage des paquets BEACON, SOS, ACK et TAKEN.</p></article>
+          <article><code>BluetoothContactManager.kt</code><p>Scan BLE, advertising et mise à jour du payload.</p></article>
+          <article><code>CsvLogger.kt</code><p>Journalisation des événements pour l’analyse des expériences.</p></article>
+          <article><code>MainActivity.kt</code><p>État global du nœud, logique du protocole et interface Compose.</p></article>
+        </div>
+
+        <div class="packet-section reveal">
+          <div class="packet-copy">
+            <p class="eyebrow">Paquets compacts</p>
+            <h3>Le téléphone diffuse seulement ce qui est nécessaire.</h3>
+            <p>
+              Les coordonnées GPS sont converties en entiers à 10<sup>−5</sup> degré, soit environ un mètre de précision, afin d’éviter
+              deux flottants de 64 bits. Quatre types de paquets organisent les échanges.
+            </p>
+          </div>
+          <div class="packet-table" role="table" aria-label="Types de paquets Bluetooth">
+            <div class="packet-row head" role="row"><span>Type</span><span>Taille</span><span>Rôle</span></div>
+            <div class="packet-row" role="row"><strong>BEACON</strong><span>5 o</span><span>présence et estimation</span></div>
+            <div class="packet-row" role="row"><strong>SOS</strong><span>17 o</span><span>message, copies, TTL et position</span></div>
+            <div class="packet-row" role="row"><strong>ACK</strong><span>6 o</span><span>confirmation de livraison</span></div>
+            <div class="packet-row" role="row"><strong>TAKEN</strong><span>5 o</span><span>nombre de copies prises par le relais</span></div>
+          </div>
+        </div>
+
+        <div class="technical-points">
+          <article class="technical-card reveal">
+            <h3>Mise à jour sans stop/start</h3>
+            <p>
+              Arrêter puis relancer continuellement l’advertising provoquait l’erreur Android
+              <code>TOO_MANY_ADVERTISERS</code>. L’application utilise donc <code>AdvertisingSet.setAdvertisingData</code>
+              pour changer le contenu diffusé sans interrompre l’émission.
+            </p>
+          </article>
+          <article class="technical-card reveal">
+            <h3>Priorité des données</h3>
+            <div class="priority-line"><span>ACK</span><i></i><span>TAKEN</span><i></i><span>SOS</span><i></i><span>BEACON</span></div>
+            <p>Une confirmation de livraison passe avant un message, puis le message passe avant un simple paquet de présence.</p>
+          </article>
+          <article class="technical-card reveal">
+            <h3>Détection des contacts</h3>
+            <p>
+              Le délai moyen entre deux paquets est suivi par un filtre EWMA. Un voisin est considéré comme absent après environ trois
+              intervalles moyens, ce qui s’adapte au rythme réel des paquets reçus.
+            </p>
+          </article>
+          <article class="technical-card reveal">
+            <h3>Fenêtre W adaptative</h3>
+            <p>
+              Une grande fenêtre stabilise λ̂ mais réagit lentement. Une petite fenêtre suit mieux les changements mais augmente le bruit.
+              L’application réduit ou agrandit W selon les variations observées.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="validation" class="chapter section-shell">
+      <div class="chapter-number">07</div>
+      <div class="chapter-heading reveal">
+        <p class="eyebrow">Validation expérimentale</p>
+        <h2>Comparer AdaptSW à des valeurs fixes de L dans un réseau qui change.</h2>
+      </div>
+
+      <div class="validation-intro prose wide reveal">
+        <p>
+          L’objectif n’est pas de montrer qu’AdaptSW livre toujours plus de messages, mais qu’il utilise mieux les transmissions lorsque
+          la fréquence des rencontres varie. Le protocole doit être comparé, dans les mêmes déplacements, à Direct Delivery, à
+          Spray-and-Wait avec L = 4 et à Spray-and-Wait avec L = 8.
+        </p>
+      </div>
+
+      <div class="experiment-summary reveal">
+        <div><strong>6</strong><span>participants</span></div>
+        <div><strong>40 min</strong><span>par session</span></div>
+        <div><strong>300 s</strong><span>de TTL</span></div>
+        <div><strong>≈ 13</strong><span>messages</span></div>
+        <div><strong>3×</strong><span>chaque condition</span></div>
+      </div>
+
+      <div class="phase-timeline reveal">
+        <article class="phase dense">
+          <span>0–10 min</span>
+          <h3>Regroupement</h3>
+          <p>Contacts fréquents, λ élevé. AdaptSW devrait réduire L*.</p>
+        </article>
+        <article class="phase sparse">
+          <span>10–30 min</span>
+          <h3>Dispersion</h3>
+          <p>Contacts rares, λ faible. AdaptSW devrait augmenter L*.</p>
+        </article>
+        <article class="phase dense return">
+          <span>30–40 min</span>
+          <h3>Retour</h3>
+          <p>Les rencontres redeviennent fréquentes et L* doit redescendre.</p>
+        </article>
+      </div>
+
+      
+
+     
+    </section>
+
+    <section class="chapter alternate" id="theme">
+      <div class="section-shell">
+        <div class="chapter-number">08</div>
+        <div class="chapter-heading reveal">
+          <p class="eyebrow">Lien au thème</p>
+          <h2>Sobriété, efficacité, optimisation.</h2>
+        </div>
+
+        <div class="theme-grid">
+          <article class="reveal">
+            <h3>Sobriété</h3>
+            <p>
+              Réduire les transmissions inutiles, limiter les données échangées et utiliser les téléphones déjà disponibles plutôt qu’un matériel dédié.
+            </p>
+          </article>
+          <article class="reveal">
+            <h3>Efficacité</h3>
+            <p>
+              Augmenter le nombre de copies lorsque les rencontres deviennent rares afin de conserver une chance suffisante de livraison.
+            </p>
+          </article>
+          <article class="reveal">
+            <h3>Optimisation</h3>
+            <p>
+              Maximiser R(L) malgré un taux λ inconnu et variable, en combinant estimation statistique, gossip distribué et recherche ternaire.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="references" class="references section-shell">
+      <div class="chapter-heading reveal">
+        <p class="eyebrow">Références utilisées dans le TIPE</p>
+        <h2>Travaux à l’origine du modèle et des protocoles comparés.</h2>
+      </div>
+      <ol class="reference-list reveal">
+        <li>K. Fall, <cite>A Delay-Tolerant Network Architecture for Challenged Internets</cite>, ACM SIGCOMM, 2003.</li>
+        <li>A. Vahdat, D. Becker, <cite>Epidemic Routing for Partially Connected Ad Hoc Networks</cite>, Duke University, 2000.</li>
+        <li>S. Jain, K. Fall, R. Patra, <cite>Routing in a Delay Tolerant Network</cite>, ACM SIGCOMM, 2004.</li>
+        <li>T. Spyropoulos, K. Psounis, C. S. Raghavendra, <cite>Spray and Wait</cite>, ACM SIGCOMM WDTN, 2005.</li>
+        <li>A. Demers et al., <cite>Epidemic Algorithms for Replicated Database Maintenance</cite>, ACM PODC, 1987.</li>
+        <li>D. Schmidt et al., <cite>BPoL: A Disruption-Tolerant LoRa Network for Disaster Communication</cite>, IEEE GHTC, 2023.</li>
+        <li>Access Now, <cite>Internet Shutdowns in 2023: the #KeepItOn Report</cite>, 2024.</li>
+      </ol>
+    </section>
+
+    <section class="closing">
+      <div class="section-shell closing-inner reveal">
+        <div>
+          <p class="eyebrow">Code du projet</p>
+          <h2>Application Android, scripts d’analyse et code de ce site.</h2>
+        </div>
+        <a class="button light" href="https://github.com/litayem2005/AdaptSW" target="_blank" rel="noreferrer">Ouvrir le dépôt GitHub</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>AdaptSW · TIPE de Youssef Litayem</p>
+    <a href="#haut">Retour en haut ↑</a>
+  </footer>
 </body>
 </html>
